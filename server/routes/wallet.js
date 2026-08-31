@@ -9,6 +9,14 @@ router.get('/:id/wallet/balance', (req, res) => {
   res.json({ balance: creator.balance });
 });
 
+router.get('/:id/wallet/pending', (req, res) => {
+  const db = getDb();
+  const row = db.prepare(
+    'SELECT COALESCE(SUM(amount), 0) as pending FROM payout_requests WHERE creator_id = ? AND status = ?'
+  ).get(req.params.id, 'pending');
+  res.json({ pending: row.pending });
+});
+
 router.get('/:id/wallet/transactions', (req, res) => {
   const db = getDb();
   const transactions = db.prepare(

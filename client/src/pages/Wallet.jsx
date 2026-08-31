@@ -3,6 +3,7 @@ import { api } from '../api';
 
 export default function Wallet({ creatorId }) {
   const [balance, setBalance] = useState(null);
+  const [pending, setPending] = useState(null);
   const [transactions, setTransactions] = useState([]);
   const [amount, setAmount] = useState('');
   const [loading, setLoading] = useState(false);
@@ -11,6 +12,7 @@ export default function Wallet({ creatorId }) {
 
   const load = () => {
     api.getBalance(creatorId).then(setBalance);
+    api.getPending(creatorId).then(setPending);
     api.getTransactions(creatorId).then(setTransactions);
   };
 
@@ -40,12 +42,20 @@ export default function Wallet({ creatorId }) {
     <div className="space-y-6">
       <h2 className="text-2xl font-bold text-slate-800">Wallet</h2>
 
-      {/* Balance Card */}
-      <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
-        <p className="text-sm font-medium text-slate-500 uppercase tracking-wide">Available Balance</p>
-        <p className="text-4xl font-bold text-slate-900 mt-1">
-          {balance !== null ? formatCents(balance.balance) : '...'}
-        </p>
+      {/* Balance Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+          <p className="text-sm font-medium text-slate-500 uppercase tracking-wide">Available Balance</p>
+          <p className="text-4xl font-bold text-slate-900 mt-1">
+            {balance !== null ? formatCents(balance.balance) : '...'}
+          </p>
+        </div>
+        <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+          <p className="text-sm font-medium text-slate-500 uppercase tracking-wide">Pending Earnings</p>
+          <p className="text-4xl font-bold text-amber-600 mt-1">
+            {pending !== null ? formatCents(pending.pending) : '...'}
+          </p>
+        </div>
       </div>
 
       {/* Payout Request Form */}

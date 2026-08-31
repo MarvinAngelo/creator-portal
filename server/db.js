@@ -31,7 +31,9 @@ function initSchema() {
       creator_id INTEGER NOT NULL REFERENCES creators(id),
       platform TEXT NOT NULL,
       handle TEXT NOT NULL,
+      follower_count INTEGER DEFAULT 0,
       connected_at TEXT DEFAULT (datetime('now')),
+      last_synced_at TEXT DEFAULT (datetime('now')),
       UNIQUE(creator_id, platform)
     );
 
@@ -41,6 +43,7 @@ function initSchema() {
       platform TEXT NOT NULL,
       content TEXT,
       url TEXT,
+      thumbnail_url TEXT,
       likes INTEGER DEFAULT 0,
       comments INTEGER DEFAULT 0,
       published_at TEXT DEFAULT (datetime('now'))

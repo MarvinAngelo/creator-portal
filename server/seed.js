@@ -27,7 +27,9 @@ db.exec(`
     creator_id INTEGER NOT NULL REFERENCES creators(id),
     platform TEXT NOT NULL,
     handle TEXT NOT NULL,
+    follower_count INTEGER DEFAULT 0,
     connected_at TEXT DEFAULT (datetime('now')),
+    last_synced_at TEXT DEFAULT (datetime('now')),
     UNIQUE(creator_id, platform)
   );
 
@@ -37,6 +39,7 @@ db.exec(`
     platform TEXT NOT NULL,
     content TEXT,
     url TEXT,
+    thumbnail_url TEXT,
     likes INTEGER DEFAULT 0,
     comments INTEGER DEFAULT 0,
     published_at TEXT DEFAULT (datetime('now'))
@@ -79,33 +82,33 @@ const c3 = insertCreator.run('Jordan Park', 'https://ui-avatars.com/api/?name=Jo
 
 const [mayaId, alexId, jordanId] = [c1.lastInsertRowid, c2.lastInsertRowid, c3.lastInsertRowid];
 
-// Seed connected accounts
+// Seed connected accounts (with follower counts and last synced)
 const insertAccount = db.prepare(
-  'INSERT INTO connected_accounts (creator_id, platform, handle) VALUES (?, ?, ?)'
+  'INSERT INTO connected_accounts (creator_id, platform, handle, follower_count, connected_at, last_synced_at) VALUES (?, ?, ?, ?, ?, ?)'
 );
-insertAccount.run(mayaId, 'twitter', '@mayachen_art');
-insertAccount.run(mayaId, 'instagram', '@mayachen.studio');
-insertAccount.run(mayaId, 'youtube', '@MayaChenArt');
-insertAccount.run(alexId, 'twitter', '@alextechreview');
-insertAccount.run(alexId, 'youtube', '@AlexTechReview');
-insertAccount.run(alexId, 'tiktok', '@alextechreview');
-insertAccount.run(jordanId, 'instagram', '@jordanpark.travel');
-insertAccount.run(jordanId, 'youtube', '@JordanParkTravel');
-insertAccount.run(jordanId, 'twitter', '@jordanparkphoto');
+insertAccount.run(mayaId, 'twitter', '@mayachen_art', 24500, '2026-03-15 10:00:00', '2026-08-27 08:00:00');
+insertAccount.run(mayaId, 'instagram', '@mayachen.studio', 89200, '2026-04-01 14:00:00', '2026-08-27 09:30:00');
+insertAccount.run(mayaId, 'youtube', '@MayaChenArt', 156000, '2026-02-20 09:00:00', '2026-08-27 07:15:00');
+insertAccount.run(alexId, 'twitter', '@alextechreview', 312000, '2026-01-10 11:00:00', '2026-08-27 06:45:00');
+insertAccount.run(alexId, 'youtube', '@AlexTechReview', 523000, '2025-11-05 08:00:00', '2026-08-27 10:00:00');
+insertAccount.run(alexId, 'tiktok', '@alextechreview', 1800000, '2026-05-12 16:00:00', '2026-08-27 09:00:00');
+insertAccount.run(jordanId, 'instagram', '@jordanpark.travel', 467000, '2025-12-01 10:00:00', '2026-08-27 08:30:00');
+insertAccount.run(jordanId, 'youtube', '@JordanParkTravel', 89000, '2026-06-20 12:00:00', '2026-08-27 07:00:00');
+insertAccount.run(jordanId, 'twitter', '@jordanparkphoto', 128000, '2026-03-08 15:00:00', '2026-08-27 09:15:00');
 
-// Seed posts
+// Seed posts (with thumbnails)
 const insertPost = db.prepare(
-  'INSERT INTO posts (creator_id, platform, content, url, likes, comments, published_at) VALUES (?, ?, ?, ?, ?, ?, ?)'
+  'INSERT INTO posts (creator_id, platform, content, url, thumbnail_url, likes, comments, published_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
 );
-insertPost.run(mayaId, 'twitter', 'Just dropped my latest generative art collection — 1/1 pieces exploring the intersection of chaos and order. Link in bio.', 'https://twitter.com/mayachen_art/status/1', 1243, 89, '2026-08-26 14:30:00');
-insertPost.run(mayaId, 'instagram', 'Behind the scenes of my creative process. From sketch to algorithm to final render.', 'https://instagram.com/p/1', 3421, 156, '2026-08-25 10:00:00');
-insertPost.run(mayaId, 'youtube', 'How I Built an Art Generator with p5.js — Full Tutorial', 'https://youtube.com/watch?v=1', 8900, 234, '2026-08-24 16:00:00');
-insertPost.run(alexId, 'youtube', 'GPT-5 Real-World Test: Is It Actually Smarter? (Honest Review)', 'https://youtube.com/watch?v=2', 45000, 1890, '2026-08-26 18:00:00');
-insertPost.run(alexId, 'twitter', 'Hot take: The new MacBook Pro is overkill for 90% of developers. Fight me.', 'https://twitter.com/alextechreview/status/2', 5670, 432, '2026-08-25 09:15:00');
-insertPost.run(alexId, 'tiktok', 'Unboxing the weirdest tech gadgets from AliExpress — part 12', 'https://tiktok.com/@alextechreview/video/2', 120000, 4500, '2026-08-24 20:00:00');
-insertPost.run(jordanId, 'instagram', 'Sunrise over Santorini. Nothing beats the golden hour in Greece.', 'https://instagram.com/p/3', 8900, 345, '2026-08-26 06:30:00');
-insertPost.run(jordanId, 'youtube', 'How I Travel Full-Time on $2000/month — Budget Breakdown', 'https://youtube.com/watch?v=3', 23000, 890, '2026-08-25 12:00:00');
-insertPost.run(jordanId, 'twitter', 'Just arrived in Tokyo. Any restaurant recommendations? Drop them below!', 'https://twitter.com/jordanparkphoto/status/3', 2340, 167, '2026-08-24 08:00:00');
+insertPost.run(mayaId, 'twitter', 'Just dropped my latest generative art collection — 1/1 pieces exploring the intersection of chaos and order. Link in bio.', 'https://twitter.com/mayachen_art/status/1', null, 1243, 89, '2026-08-26 14:30:00');
+insertPost.run(mayaId, 'instagram', 'Behind the scenes of my creative process. From sketch to algorithm to final render.', 'https://instagram.com/p/1', 'https://placehold.co/400x400/6366f1/ffffff?text=Art+Process', 3421, 156, '2026-08-25 10:00:00');
+insertPost.run(mayaId, 'youtube', 'How I Built an Art Generator with p5.js — Full Tutorial', 'https://youtube.com/watch?v=1', 'https://placehold.co/480x270/6366f1/ffffff?text=p5.js+Tutorial', 8900, 234, '2026-08-24 16:00:00');
+insertPost.run(alexId, 'youtube', 'GPT-5 Real-World Test: Is It Actually Smarter? (Honest Review)', 'https://youtube.com/watch?v=2', 'https://placehold.co/480x270/ec4899/ffffff?text=GPT-5+Review', 45000, 1890, '2026-08-26 18:00:00');
+insertPost.run(alexId, 'twitter', 'Hot take: The new MacBook Pro is overkill for 90% of developers. Fight me.', 'https://twitter.com/alextechreview/status/2', null, 5670, 432, '2026-08-25 09:15:00');
+insertPost.run(alexId, 'tiktok', 'Unboxing the weirdest tech gadgets from AliExpress — part 12', 'https://tiktok.com/@alextechreview/video/2', 'https://placehold.co/400x720/0f0f0f/ffffff?text=Tech+Gadgets', 120000, 4500, '2026-08-24 20:00:00');
+insertPost.run(jordanId, 'instagram', 'Sunrise over Santorini. Nothing beats the golden hour in Greece.', 'https://instagram.com/p/3', 'https://placehold.co/400x400/14b8a6/ffffff?text=Santorini', 8900, 345, '2026-08-26 06:30:00');
+insertPost.run(jordanId, 'youtube', 'How I Travel Full-Time on $2000/month — Budget Breakdown', 'https://youtube.com/watch?v=3', 'https://placehold.co/480x270/14b8a6/ffffff?text=Budget+Travel', 23000, 890, '2026-08-25 12:00:00');
+insertPost.run(jordanId, 'twitter', 'Just arrived in Tokyo. Any restaurant recommendations? Drop them below!', 'https://twitter.com/jordanparkphoto/status/3', null, 2340, 167, '2026-08-24 08:00:00');
 
 // Seed wallet transactions (amounts in integer cents)
 const insertTxn = db.prepare(

@@ -11,13 +11,15 @@ router.get('/:id/payouts', (req, res) => {
   res.json(payouts);
 });
 
-// POST /api/payouts — Create a payout request
+// POST — Create a payout request
 router.post('/', (req, res) => {
   const db = getDb();
-  const { creator_id, amount } = req.body;
+  let { creator_id, amount } = req.body;
   const idempotencyKey = req.headers['idempotency-key'];
 
   // --- 1. Validate inputs ---
+  creator_id = Number(creator_id);
+  amount = Number(amount);
   if (!creator_id || !Number.isInteger(creator_id)) {
     return res.status(400).json({ error: 'creator_id must be an integer' });
   }

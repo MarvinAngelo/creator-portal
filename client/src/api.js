@@ -1,9 +1,10 @@
 const API_BASE = '/api';
 
 async function request(path, options = {}) {
+  const { headers: customHeaders, ...rest } = options;
   const res = await fetch(`${API_BASE}${path}`, {
-    headers: { 'Content-Type': 'application/json', ...options.headers },
-    ...options,
+    ...rest,
+    headers: { 'Content-Type': 'application/json', ...customHeaders },
   });
   const data = await res.json();
   if (!res.ok) throw { status: res.status, ...data };
@@ -14,6 +15,7 @@ export const api = {
   getCreator: (id) => request(`/creators/${id}`),
   getPosts: (id) => request(`/creators/${id}/posts`),
   getBalance: (id) => request(`/creators/${id}/wallet/balance`),
+  getPending: (id) => request(`/creators/${id}/wallet/pending`),
   getTransactions: (id) => request(`/creators/${id}/wallet/transactions`),
   requestPayout: (creatorId, amount, idempotencyKey) =>
     request(`/payouts`, {
