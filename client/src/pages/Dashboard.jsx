@@ -1,18 +1,13 @@
 import { useState, useEffect } from 'react';
 import { api } from '../api';
+import SocialIcon from '../components/SocialIcon';
+import { ClockIcon, HeartIcon, ChatBubbleIcon, UserGroupIcon, LinkIcon, UnlinkIcon } from '../components/Icons';
 
-const PLATFORM_ICONS = {
-  twitter: '🐦',
-  youtube: '📺',
-  instagram: '📷',
-  tiktok: '🎵',
-};
-
-const PLATFORM_COLORS = {
-  twitter: 'bg-blue-50 text-blue-700 border-blue-200',
-  youtube: 'bg-red-50 text-red-700 border-red-200',
-  instagram: 'bg-pink-50 text-pink-700 border-pink-200',
-  tiktok: 'bg-slate-800 text-white border-slate-700',
+const PLATFORM_STYLES = {
+  twitter: { bg: 'bg-black', text: 'text-white', border: 'border-black', light: 'bg-slate-50' },
+  youtube: { bg: 'bg-red-600', text: 'text-white', border: 'border-red-600', light: 'bg-red-50' },
+  instagram: { bg: 'bg-gradient-to-br from-purple-600 via-pink-500 to-orange-400', text: 'text-white', border: 'border-pink-500', light: 'bg-pink-50' },
+  tiktok: { bg: 'bg-black', text: 'text-white', border: 'border-black', light: 'bg-slate-50' },
 };
 
 const ALL_PLATFORMS = ['all', 'twitter', 'youtube', 'instagram', 'tiktok'];
@@ -40,93 +35,154 @@ export default function Dashboard({ creatorId }) {
 
   const filteredPosts = filter === 'all' ? posts : posts.filter(p => p.platform === filter);
 
-  if (!creator) return <p className="text-slate-400">Loading...</p>;
+  if (!creator) {
+    return (
+      <div className="space-y-6 animate-pulse">
+        <div className="bg-white rounded-2xl h-32" />
+        <div className="grid grid-cols-3 gap-4">
+          <div className="bg-white rounded-2xl h-28" />
+          <div className="bg-white rounded-2xl h-28" />
+          <div className="bg-white rounded-2xl h-28" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       {/* Profile Header */}
-      <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm flex items-center gap-5">
-        <img src={creator.avatar_url} alt={creator.name} className="w-16 h-16 rounded-full" />
-        <div>
-          <h2 className="text-2xl font-bold text-slate-800">{creator.name}</h2>
-          <p className="text-slate-500 text-sm">{creator.bio}</p>
-        </div>
-        <div className="ml-auto text-right">
-          <p className="text-sm text-slate-400">Balance</p>
-          <p className="text-2xl font-bold text-indigo-600">{formatCents(creator.balance)}</p>
+      <div className="bg-white rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden">
+        <div className="h-24 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500" />
+        <div className="px-6 pb-6 -mt-10">
+          <div className="flex items-end gap-5">
+            <img
+              src={creator.avatar_url}
+              alt={creator.name}
+              className="w-20 h-20 rounded-2xl border-4 border-white shadow-lg"
+            />
+            <div className="flex-1 pb-1">
+              <h2 className="text-2xl font-bold text-slate-800">{creator.name}</h2>
+              <p className="text-slate-500 text-sm mt-0.5">{creator.bio}</p>
+            </div>
+            <div className="text-right pb-1">
+              <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">Balance</p>
+              <p className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                {formatCents(creator.balance)}
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Connected Accounts */}
-      <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
-        <h3 className="text-lg font-semibold text-slate-800 mb-4">Connected Accounts</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {creator.connected_accounts.map((acc) => (
-            <div
-              key={acc.id}
-              className={`relative p-3 rounded-lg border ${PLATFORM_COLORS[acc.platform] || 'bg-slate-50 text-slate-700 border-slate-200'}`}
-            >
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-sm font-medium">
-                  {PLATFORM_ICONS[acc.platform] || '🔗'} {acc.platform}
-                </span>
-                <span className="text-xs opacity-70">{formatSynced(acc.last_synced_at)}</span>
+      <div className="bg-white rounded-2xl border border-slate-200/60 p-6 shadow-sm">
+        <div className="flex items-center gap-2 mb-5">
+          <LinkIcon className="w-5 h-5 text-slate-400" />
+          <h3 className="text-lg font-semibold text-slate-800">Connected Accounts</h3>
+          <span className="ml-auto text-xs font-medium text-slate-400 bg-slate-100 px-2.5 py-1 rounded-full">
+            {creator.connected_accounts.length} connected
+          </span>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {creator.connected_accounts.map((acc) => {
+            const style = PLATFORM_STYLES[acc.platform] || { bg: 'bg-slate-500', text: 'text-white', border: 'border-slate-500', light: 'bg-slate-50' };
+            return (
+              <div
+                key={acc.id}
+                className={`group relative rounded-xl border border-slate-200/60 p-4 hover:shadow-md transition-all duration-200 ${style.light}`}
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <div className={`w-10 h-10 rounded-xl ${style.bg} flex items-center justify-center shadow-sm`}>
+                    <SocialIcon platform={acc.platform} className="w-5 h-5" />
+                  </div>
+                  <div className="flex items-center gap-1 text-xs text-slate-400">
+                    <ClockIcon className="w-3.5 h-3.5" />
+                    {formatSynced(acc.last_synced_at)}
+                  </div>
+                </div>
+                <p className="font-semibold text-slate-800 text-sm">{acc.handle}</p>
+                <div className="flex items-center gap-1 mt-1 text-xs text-slate-500">
+                  <UserGroupIcon className="w-3.5 h-3.5" />
+                  {formatNumber(acc.follower_count)} followers
+                </div>
+                <button className="mt-3 flex items-center gap-1 text-xs font-medium text-slate-400 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100">
+                  <UnlinkIcon className="w-3.5 h-3.5" />
+                  Disconnect
+                </button>
               </div>
-              <p className="text-sm font-semibold">{acc.handle}</p>
-              <p className="text-xs opacity-70 mt-1">{formatNumber(acc.follower_count)} followers</p>
-              <button className="mt-2 text-xs underline opacity-60 hover:opacity-100">Disconnect</button>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
       {/* Recent Posts */}
-      <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-slate-800">Recent Posts</h3>
-          <div className="flex gap-1">
-            {ALL_PLATFORMS.map((p) => (
-              <button
-                key={p}
-                onClick={() => setFilter(p)}
-                className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-                  filter === p
-                    ? 'bg-indigo-600 text-white'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                }`}
-              >
-                {p === 'all' ? 'All' : p}
-              </button>
-            ))}
+      <div className="bg-white rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden">
+        <div className="p-6 pb-0">
+          <div className="flex items-center justify-between mb-5">
+            <h3 className="text-lg font-semibold text-slate-800">Recent Posts</h3>
+            <div className="flex gap-1.5 bg-slate-100/80 rounded-xl p-1">
+              {ALL_PLATFORMS.map((p) => (
+                <button
+                  key={p}
+                  onClick={() => setFilter(p)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${
+                    filter === p
+                      ? 'bg-white text-indigo-600 shadow-sm'
+                      : 'text-slate-500 hover:text-slate-700'
+                  }`}
+                >
+                  {p !== 'all' && <SocialIcon platform={p} className="w-3.5 h-3.5" />}
+                  {p === 'all' ? 'All' : p}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
         <div className="divide-y divide-slate-100">
-          {filteredPosts.map((post) => (
-            <div key={post.id} className="py-4 flex gap-4">
-              {post.thumbnail_url && (
-                <img
-                  src={post.thumbnail_url}
-                  alt=""
-                  className="w-24 h-16 object-cover rounded-lg shrink-0"
-                />
-              )}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className={`px-2 py-0.5 rounded text-xs font-medium ${PLATFORM_COLORS[post.platform] || 'bg-slate-100 text-slate-600'}`}>
-                    {post.platform}
-                  </span>
-                  <span className="text-xs text-slate-400">{formatDate(post.published_at)}</span>
+          {filteredPosts.map((post, i) => {
+            const style = PLATFORM_STYLES[post.platform] || {};
+            return (
+              <div key={post.id} className="px-6 py-4 hover:bg-slate-50/50 transition-colors duration-150">
+                <div className="flex gap-4">
+                  {post.thumbnail_url ? (
+                    <img
+                      src={post.thumbnail_url}
+                      alt=""
+                      className="w-28 h-20 object-cover rounded-xl shrink-0"
+                    />
+                  ) : (
+                    <div className={`w-28 h-20 rounded-xl ${style.bg || 'bg-slate-200'} flex items-center justify-center shrink-0`}>
+                      <SocialIcon platform={post.platform} className="w-8 h-8 opacity-50" />
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium ${style.bg || 'bg-slate-200'} ${style.text || 'text-slate-700'}`}>
+                        <SocialIcon platform={post.platform} className="w-3 h-3" />
+                        {post.platform}
+                      </span>
+                      <span className="text-xs text-slate-400">{formatDate(post.published_at)}</span>
+                    </div>
+                    <p className="text-sm text-slate-700 line-clamp-2 leading-relaxed">{post.content}</p>
+                  </div>
+                  <div className="flex flex-col gap-2 text-sm shrink-0 pt-1">
+                    <span className="flex items-center gap-1.5 text-slate-400" title="Likes">
+                      <HeartIcon className="w-4 h-4 text-pink-400" />
+                      {formatNumber(post.likes)}
+                    </span>
+                    <span className="flex items-center gap-1.5 text-slate-400" title="Comments">
+                      <ChatBubbleIcon className="w-4 h-4 text-blue-400" />
+                      {formatNumber(post.comments)}
+                    </span>
+                  </div>
                 </div>
-                <p className="text-sm text-slate-700 line-clamp-2">{post.content}</p>
               </div>
-              <div className="flex gap-4 text-sm text-slate-500 shrink-0">
-                <span title="Likes">❤️ {formatNumber(post.likes)}</span>
-                <span title="Comments">💬 {formatNumber(post.comments)}</span>
-              </div>
-            </div>
-          ))}
+            );
+          })}
           {filteredPosts.length === 0 && (
-            <p className="py-8 text-center text-slate-400 text-sm">No posts from this channel.</p>
+            <div className="py-12 text-center">
+              <p className="text-slate-400 text-sm">No posts from this channel.</p>
+            </div>
           )}
         </div>
       </div>
