@@ -1,0 +1,6 @@
+node_modules/
+server/creator_portal.db
+server/creator_portal.db-shm
+server/creator_portal.db-wal
+dist/
+.env
