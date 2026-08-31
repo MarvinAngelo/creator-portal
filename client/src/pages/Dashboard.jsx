@@ -141,8 +141,10 @@ export default function Dashboard({ creatorId }) {
                 ) : (
                   <button
                     onClick={() => handleDisconnect(acc.id)}
-                    className="mt-3 flex items-center gap-1 text-xs font-medium transition-all duration-300 opacity-0 group-hover:opacity-100 hover:!text-[var(--c5)]"
+                    className="mt-3 flex items-center gap-1 text-xs font-medium transition-all duration-300"
                     style={{ color: 'var(--ink-faint)' }}
+                    onMouseEnter={(e) => e.currentTarget.style.color = 'var(--c5)'}
+                    onMouseLeave={(e) => e.currentTarget.style.color = 'var(--ink-faint)'}
                   >
                     <UnlinkIcon className="w-3.5 h-3.5" />
                     Disconnect
