@@ -35,6 +35,12 @@ export default function Dashboard({ creatorId }) {
     });
   };
 
+  const disconnectedPlatforms = new Set(
+    creator?.connected_accounts
+      .filter(acc => disconnected.has(acc.id))
+      .map(acc => acc.platform) || []
+  );
+
   const connectedCount = creator ? creator.connected_accounts.length - disconnected.size : 0;
 
   const formatCents = (cents) => `$${(cents / 100).toFixed(2)}`;
@@ -57,7 +63,11 @@ export default function Dashboard({ creatorId }) {
     return `${years}y ago`;
   };
 
-  const filteredPosts = filter === 'all' ? posts : posts.filter(p => p.platform === filter);
+  const filteredPosts = posts.filter(p => {
+    if (disconnectedPlatforms.has(p.platform)) return false;
+    if (filter === 'all') return true;
+    return p.platform === filter;
+  });
 
   if (!creator) {
     return (
@@ -162,21 +172,26 @@ export default function Dashboard({ creatorId }) {
           <div className="flex items-center justify-between mb-5">
             <h3 className="text-lg font-semibold" style={{ color: 'var(--ink)' }}>Recent Posts</h3>
             <div className="flex gap-1.5 rounded-xl p-1" style={{ background: 'var(--surface)' }}>
-              {ALL_PLATFORMS.map((p) => (
-                <button
-                  key={p}
-                  onClick={() => setFilter(p)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-300"
-                  style={{
-                    background: filter === p ? 'var(--ink)' : 'transparent',
-                    color: filter === p ? 'var(--bg)' : 'var(--ink-faint)',
-                    fontFamily: 'var(--font-mono)',
-                  }}
-                >
-                  {p !== 'all' && <SocialIcon platform={p} className="w-3.5 h-3.5" />}
-                  {p === 'all' ? 'All' : p}
-                </button>
-              ))}
+              {ALL_PLATFORMS.map((p) => {
+                const isDisconnectedFilter = p !== 'all' && disconnectedPlatforms.has(p);
+                return (
+                  <button
+                    key={p}
+                    onClick={() => !isDisconnectedFilter && setFilter(p)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-300"
+                    style={{
+                      background: filter === p && !isDisconnectedFilter ? 'var(--ink)' : 'transparent',
+                      color: isDisconnectedFilter ? 'var(--line)' : filter === p ? 'var(--bg)' : 'var(--ink-faint)',
+                      fontFamily: 'var(--font-mono)',
+                      cursor: isDisconnectedFilter ? 'not-allowed' : 'pointer',
+                      opacity: isDisconnectedFilter ? 0.4 : 1,
+                    }}
+                  >
+                    {p !== 'all' && <SocialIcon platform={p} className="w-3.5 h-3.5" />}
+                    {p === 'all' ? 'All' : isDisconnectedFilter ? `${p} ✕` : p}
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>
