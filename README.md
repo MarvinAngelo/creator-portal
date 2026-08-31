@@ -1,130 +1,54 @@
 # Creator Portal
 
-A full-stack portal for creators working with a talent agency. Three screens: Dashboard (profile, connected accounts, posts feed), Wallet (balance, pending earnings, transactions), and Payouts (request, approve/reject lifecycle).
+A full-stack creator management portal with three screens: Dashboard, Wallet, and Payouts. Built for the Kalpa Vision technical assessment.
 
 **Live:** [https://creator-portal-9hlt.onrender.com/dashboard](https://creator-portal-9hlt.onrender.com/dashboard)
 
-## How It's Built
+## Tech Stack
 
 - **Frontend:** React 18 + Vite + Tailwind CSS + React Router
-- **Backend:** Express.js API serving both the API and built React static files (single deployment)
-- **Database:** SQLite via better-sqlite3 (zero config, synchronous, real persistence)
-- **All monetary values:** Integer cents — never floating-point
-- **Dark mode:** Toggle between light and dark themes with localStorage persistence
+- **Backend:** Express.js (serves API + static files from single deployment)
+- **Database:** SQLite via better-sqlite3 (zero config, real persistence)
+- **Dark mode:** Toggle with localStorage persistence
 
-## Which Slice I Made Real
+## Slice B: Payout Request
 
-**Slice B: Payout Request.** I chose this because the lifecycle (pending → approved/rejected) has more edge cases to handle than a live API fetch, and the consistency requirements (balance, idempotency, transaction history) are harder to get right. It's a better test of backend reasoning.
+I chose this because the lifecycle (pending → approved/rejected) has more edge cases than a live API fetch, and the consistency requirements are harder to get right.
 
-The payout endpoint (`POST /api/payouts`) handles:
-- **Insufficient balance** — returns 422 with clear message
-- **Duplicate submissions** — idempotency key in request header, UNIQUE constraint in DB, returns existing payout on retry
-- **Concurrent requests** — `BEGIN IMMEDIATE` acquires SQLite write lock at transaction start, serializing concurrent requests
-- **Terminal state guards** — approve/reject check status before transitioning, return 409 if already processed
-- **Balance consistency** — all three writes (payout record, balance update, transaction log) wrapped in a single DB transaction
+**Key features:**
+- Idempotency key (header) prevents duplicate submissions
+- `BEGIN IMMEDIATE` serializes concurrent requests
+- Balance deducted at request time, refunded on rejection
+- Terminal state guards return 409 if already processed
+- All writes wrapped in single transaction for atomicity
 
 ## Features
 
-### Dashboard
-- Creator profile with avatar, name, bio, and balance
-- Connected accounts with platform icons (Twitter, YouTube, Instagram, TikTok)
-- Follower counts and last synced time for each account
-- Disconnect/reconnect functionality with dynamic counter
-- Posts feed filtered by platform
-- Posts from disconnected channels are hidden
-- Filter pills show disconnected platforms as disabled
+**Dashboard:** Creator profile, connected accounts (Twitter/YouTube/Instagram/TikTok) with follower counts, disconnect/reconnect with dynamic counter, posts feed filtered by platform (disconnected channels hidden).
 
-### Wallet
-- Gradient balance cards with glowing effects
-- Available balance and pending earnings display
-- Payout request form with dollar sign prefix
-- Loading spinner during submission
-- Transaction history with type icons (credit, debit, refund)
-- Expandable rejection reason on rejected payouts
+**Wallet:** Gradient balance cards, pending earnings, payout request form, transaction history with type icons, expandable rejection reasons.
 
-### Payouts
-- Payout request list with status badges
-- Pending, approved, and rejected states with color coding
-- Approve/reject actions with confirmation
-- Expandable rejection reason button
-- Error banner with dismiss functionality
+**Payouts:** Status badges (pending/approved/rejected), approve/reject actions, error banners with dismiss.
 
-### UI/UX
-- Kalpa Vision aesthetic — dark theme by default
-- Glassmorphism navigation with backdrop blur
-- Accent glow effects on cards and buttons
-- Monospace labels for metadata
-- Smooth animations and transitions
-- Custom scrollbar styling
-- Responsive design for all screen sizes
+**UI/UX:** Kalpa Vision aesthetic — glassmorphism nav, accent glow effects, monospace labels, smooth animations, responsive design.
 
-## Assumptions
+## AI Bug Fix
 
-- Creator is already logged in — no auth built per brief
-- Connected accounts are mocked with seeded data — no real OAuth
-- Posts are seeded with realistic content — Slice A (live post fetching) was not chosen
-- Single creator scenario — no account switching needed
-- Deployed on Render free tier
-
-## What I'd Build Next
-
-1. **Real social OAuth** — connect actual accounts, pull real follower counts
-2. **Live post fetching** (Slice A) — YouTube Data API or RSS for real content
-3. **Admin dashboard** — approve/reject payouts from a web UI instead of API calls
-4. **Pagination** — for posts and transactions at scale
-5. **Webhook notifications** — alert creators when payouts are processed
-6. **Rate limiting** — prevent abuse on the payout endpoint
-
-## Where the AI Got It Wrong
-
-The `request()` helper in `api.js` had a spread order bug. The original code was:
-
-```js
-fetch(url, {
-  headers: { 'Content-Type': 'application/json', ...options.headers },
-  ...options,  // <-- this overwrites the merged headers above
-});
-```
-
-The `...options` spread included `options.headers`, which overwrote the merged headers object — losing `Content-Type: application/json`. Without that header, Express's `express.json()` middleware didn't parse the request body, so `req.body` was `undefined` and `creator_id` failed the integer validation. I fixed it by destructuring `headers` out of `options` first:
+The `request()` helper had a spread order bug — `...options` overwrote merged headers, losing `Content-Type`. Fixed by destructuring headers first:
 
 ```js
 const { headers: customHeaders, ...rest } = options;
-fetch(url, {
-  ...rest,
-  headers: { 'Content-Type': 'application/json', ...customHeaders },
-});
+fetch(url, { ...rest, headers: { 'Content-Type': 'application/json', ...customHeaders } });
 ```
 
-## Project Structure
+## What I'd Build Next
 
-```
-creator-portal/
-├── server/
-│   ├── index.js          # Express entry, API routes
-│   ├── db.js             # SQLite setup, schema
-│   ├── seed.js           # Idempotent seed function
-│   └── routes/
-│       ├── creators.js   # Creator + posts endpoints
-│       ├── wallet.js     # Balance, pending, transactions
-│       └── payouts.js    # Payout CRUD + approve/reject
-├── client/
-│   ├── src/
-│   │   ├── App.jsx       # Nav, routing, dark mode
-│   │   ├── api.js        # Fetch wrapper
-│   │   ├── context/
-│   │   │   └── DarkModeContext.jsx
-│   │   ├── components/
-│   │   │   ├── Icons.jsx      # SVG UI icons
-│   │   │   └── SocialIcon.jsx # Platform logos
-│   │   └── pages/
-│   │       ├── Dashboard.jsx
-│   │       ├── Wallet.jsx
-│   │       └── Payouts.jsx
-│   ├── index.html
-│   └── vite.config.js
-└── render.yaml           # Deployment config
-```
+1. Real social OAuth
+2. Live post fetching (Slice A)
+3. Admin dashboard for payout management
+4. Pagination for posts/transactions
+5. Webhook notifications
+6. Rate limiting
 
 ---
 
