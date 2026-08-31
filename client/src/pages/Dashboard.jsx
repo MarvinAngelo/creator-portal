@@ -4,10 +4,10 @@ import SocialIcon from '../components/SocialIcon';
 import { ClockIcon, HeartIcon, MessageSquareIcon, UserGroupIcon, LinkIcon, UnlinkIcon } from '../components/Icons';
 
 const PLATFORM_STYLES = {
-  twitter: { iconBg: 'bg-white', iconBorder: 'border-2 border-slate-200', text: 'text-slate-800', light: 'bg-slate-50', badge: 'bg-slate-900 text-white' },
-  youtube: { iconBg: 'bg-red-50', iconBorder: 'border-2 border-red-200', text: 'text-red-700', light: 'bg-red-50/50', badge: 'bg-red-600 text-white' },
-  instagram: { iconBg: 'bg-pink-50', iconBorder: 'border-2 border-pink-200', text: 'text-pink-700', light: 'bg-pink-50/50', badge: 'bg-gradient-to-r from-purple-600 via-pink-500 to-orange-400 text-white' },
-  tiktok: { iconBg: 'bg-white', iconBorder: 'border-2 border-slate-200', text: 'text-slate-800', light: 'bg-slate-50', badge: 'bg-slate-900 text-white' },
+  twitter: { iconBg: 'var(--surface)', iconBorder: 'var(--line)', light: 'var(--surface)', badge: '#1d9bf0' },
+  youtube: { iconBg: 'rgba(255, 0, 0, 0.08)', iconBorder: 'rgba(255, 0, 0, 0.2)', light: 'rgba(255, 0, 0, 0.03)', badge: '#dc2626' },
+  instagram: { iconBg: 'rgba(228, 64, 95, 0.08)', iconBorder: 'rgba(228, 64, 95, 0.2)', light: 'rgba(228, 64, 95, 0.03)', badge: 'linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045)' },
+  tiktok: { iconBg: 'var(--surface)', iconBorder: 'var(--line)', light: 'var(--surface)', badge: '#ff0050' },
 };
 
 const ALL_PLATFORMS = ['all', 'twitter', 'youtube', 'instagram', 'tiktok'];
@@ -42,10 +42,19 @@ export default function Dashboard({ creatorId }) {
   const formatDate = (d) => new Date(d + 'Z').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   const formatSynced = (d) => {
     const diff = Date.now() - new Date(d + 'Z').getTime();
-    const hours = Math.floor(diff / 3600000);
-    if (hours < 1) return 'Just now';
+    const seconds = Math.floor(diff / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+    const weeks = Math.floor(days / 7);
+    const months = Math.floor(days / 30);
+    const years = Math.floor(days / 365);
+    if (seconds < 60) return 'Just now';
+    if (minutes < 60) return `${minutes}m ago`;
     if (hours < 24) return `${hours}h ago`;
-    return `${Math.floor(hours / 24)}d ago`;
+    if (weeks < 4) return `${weeks}w ago`;
+    if (months < 12) return `${months}mo ago`;
+    return `${years}y ago`;
   };
 
   const filteredPosts = filter === 'all' ? posts : posts.filter(p => p.platform === filter);
@@ -53,11 +62,11 @@ export default function Dashboard({ creatorId }) {
   if (!creator) {
     return (
       <div className="space-y-6 animate-pulse">
-        <div className="bg-white rounded-2xl h-32" />
-        <div className="grid grid-cols-3 gap-4">
-          <div className="bg-white rounded-2xl h-28" />
-          <div className="bg-white rounded-2xl h-28" />
-          <div className="bg-white rounded-2xl h-28" />
+        <div className="kv-card h-32" />
+        <div className="kv-grid grid-cols-3">
+          <div className="kv-grid-item h-28" />
+          <div className="kv-grid-item h-28" />
+          <div className="kv-grid-item h-28" />
         </div>
       </div>
     );
@@ -66,64 +75,65 @@ export default function Dashboard({ creatorId }) {
   return (
     <div className="space-y-6">
       {/* Profile Header */}
-      <div className="bg-white rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden">
-        <div className="px-6 py-5">
-          <div className="flex items-end gap-5">
-            <img
-              src={creator.avatar_url}
-              alt={creator.name}
-              className="w-20 h-20 rounded-2xl border-4 border-white shadow-lg"
-            />
-            <div className="flex-1 pb-1">
-              <h2 className="text-2xl font-bold text-slate-800">{creator.name}</h2>
-              <p className="text-slate-500 text-sm mt-0.5">{creator.bio}</p>
-            </div>
-            <div className="text-right pb-1">
-              <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">Balance</p>
-              <p className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                {formatCents(creator.balance)}
-              </p>
-            </div>
+      <div className="kv-card p-6">
+        <div className="flex items-end gap-5">
+          <img
+            src={creator.avatar_url}
+            alt={creator.name}
+            className="w-20 h-20 rounded-2xl"
+            style={{ border: '2px solid var(--line)' }}
+          />
+          <div className="flex-1 pb-1">
+            <h2 className="text-2xl font-semibold tracking-tight" style={{ color: 'var(--ink)' }}>{creator.name}</h2>
+            <p className="text-sm mt-0.5" style={{ color: 'var(--ink-dim)' }}>{creator.bio}</p>
+          </div>
+          <div className="text-right pb-1">
+            <p className="text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--ink-faint)', fontFamily: 'var(--font-mono)' }}>Balance</p>
+            <p className="text-3xl font-bold" style={{ color: 'var(--accent)' }}>
+              {formatCents(creator.balance)}
+            </p>
           </div>
         </div>
       </div>
 
       {/* Connected Accounts */}
-      <div className="bg-white rounded-2xl border border-slate-200/60 p-6 shadow-sm">
+      <div className="kv-card p-6">
         <div className="flex items-center gap-2 mb-5">
-          <LinkIcon className="w-5 h-5 text-slate-400" />
-          <h3 className="text-lg font-semibold text-slate-800">Connected Accounts</h3>
-          <span className="ml-auto text-xs font-medium text-slate-400 bg-slate-100 px-2.5 py-1 rounded-full">
+          <LinkIcon className="w-5 h-5" style={{ color: 'var(--ink-faint)' }} />
+          <h3 className="text-lg font-semibold" style={{ color: 'var(--ink)' }}>Connected Accounts</h3>
+          <span className="text-xs font-medium px-2.5 py-1 rounded-full" style={{ color: 'var(--accent)', background: 'rgba(61, 169, 255, 0.1)', border: '1px solid rgba(61, 169, 255, 0.2)', fontFamily: 'var(--font-mono)' }}>
             {connectedCount} connected
           </span>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {creator.connected_accounts.map((acc) => {
-            const style = PLATFORM_STYLES[acc.platform] || { iconBg: 'bg-slate-100', iconBorder: 'border-2 border-slate-200', text: 'text-slate-700', light: 'bg-slate-50', badge: 'bg-slate-500 text-white' };
+            const style = PLATFORM_STYLES[acc.platform] || { iconBg: 'var(--surface)', iconBorder: 'var(--line)', light: 'var(--surface)', badge: 'var(--ink-faint)' };
             const isDisconnected = disconnected.has(acc.id);
             return (
               <div
                 key={acc.id}
-                className={`group relative rounded-xl border border-slate-200/60 p-4 hover:shadow-md transition-all duration-200 ${isDisconnected ? 'opacity-50' : style.light}`}
+                className="kv-card p-4"
+                style={{ opacity: isDisconnected ? 0.5 : 1 }}
               >
                 <div className="flex items-start justify-between mb-3">
-                  <div className={`w-10 h-10 rounded-xl ${style.iconBg} ${style.iconBorder} flex items-center justify-center`}>
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: style.iconBg, border: `1px solid ${style.iconBorder}` }}>
                     <SocialIcon platform={acc.platform} className="w-5 h-5" />
                   </div>
-                  <div className="flex items-center gap-1 text-xs text-slate-400">
+                  <div className="flex items-center gap-1 text-xs" style={{ color: 'var(--ink-faint)', fontFamily: 'var(--font-mono)' }}>
                     <ClockIcon className="w-3.5 h-3.5" />
                     {isDisconnected ? 'Disconnected' : 'Just now'}
                   </div>
                 </div>
-                <p className={`font-semibold text-sm ${isDisconnected ? 'text-slate-400 line-through' : 'text-slate-800'}`}>{acc.handle}</p>
-                <div className="flex items-center gap-1 mt-1 text-xs text-slate-500">
+                <p className="font-semibold text-sm" style={{ color: isDisconnected ? 'var(--ink-faint)' : 'var(--ink)', textDecoration: isDisconnected ? 'line-through' : 'none' }}>{acc.handle}</p>
+                <div className="flex items-center gap-1 mt-1 text-xs" style={{ color: 'var(--ink-dim)' }}>
                   <UserGroupIcon className="w-3.5 h-3.5" />
                   {formatNumber(acc.follower_count)} followers
                 </div>
                 {isDisconnected ? (
                   <button
                     onClick={() => handleReconnect(acc.id)}
-                    className="mt-3 flex items-center gap-1 text-xs font-medium text-indigo-500 hover:text-indigo-700 transition-colors"
+                    className="mt-3 flex items-center gap-1 text-xs font-medium transition-all duration-300"
+                    style={{ color: 'var(--accent)' }}
                   >
                     <LinkIcon className="w-3.5 h-3.5" />
                     Reconnect
@@ -131,7 +141,8 @@ export default function Dashboard({ creatorId }) {
                 ) : (
                   <button
                     onClick={() => handleDisconnect(acc.id)}
-                    className="mt-3 flex items-center gap-1 text-xs font-medium text-slate-400 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+                    className="mt-3 flex items-center gap-1 text-xs font-medium transition-all duration-300 opacity-0 group-hover:opacity-100 hover:!text-[var(--c5)]"
+                    style={{ color: 'var(--ink-faint)' }}
                   >
                     <UnlinkIcon className="w-3.5 h-3.5" />
                     Disconnect
@@ -144,20 +155,21 @@ export default function Dashboard({ creatorId }) {
       </div>
 
       {/* Recent Posts */}
-      <div className="bg-white rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden">
+      <div className="kv-card overflow-hidden">
         <div className="p-6 pb-0">
           <div className="flex items-center justify-between mb-5">
-            <h3 className="text-lg font-semibold text-slate-800">Recent Posts</h3>
-            <div className="flex gap-1.5 bg-slate-100/80 rounded-xl p-1">
+            <h3 className="text-lg font-semibold" style={{ color: 'var(--ink)' }}>Recent Posts</h3>
+            <div className="flex gap-1.5 rounded-xl p-1" style={{ background: 'var(--surface)' }}>
               {ALL_PLATFORMS.map((p) => (
                 <button
                   key={p}
                   onClick={() => setFilter(p)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${
-                    filter === p
-                      ? 'bg-white text-indigo-600 shadow-sm'
-                      : 'text-slate-500 hover:text-slate-700'
-                  }`}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-300"
+                  style={{
+                    background: filter === p ? 'var(--ink)' : 'transparent',
+                    color: filter === p ? 'var(--bg)' : 'var(--ink-faint)',
+                    fontFamily: 'var(--font-mono)',
+                  }}
                 >
                   {p !== 'all' && <SocialIcon platform={p} className="w-3.5 h-3.5" />}
                   {p === 'all' ? 'All' : p}
@@ -166,11 +178,11 @@ export default function Dashboard({ creatorId }) {
             </div>
           </div>
         </div>
-        <div className="divide-y divide-slate-100">
-          {filteredPosts.map((post, i) => {
+        <div style={{ borderTop: '1px solid var(--line-soft)' }}>
+          {filteredPosts.map((post) => {
             const style = PLATFORM_STYLES[post.platform] || {};
             return (
-              <div key={post.id} className="px-6 py-4 hover:bg-slate-50/50 transition-colors duration-150">
+              <div key={post.id} className="px-6 py-4 transition-colors duration-200" style={{ borderBottom: '1px solid var(--line-soft)' }}>
                 <div className="flex gap-4">
                   {post.thumbnail_url ? (
                     <img
@@ -179,27 +191,27 @@ export default function Dashboard({ creatorId }) {
                       className="w-28 h-20 object-cover rounded-xl shrink-0"
                     />
                   ) : (
-                    <div className="w-28 h-20 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0">
-                      <SocialIcon platform={post.platform} className="w-8 h-8 opacity-30" />
+                    <div className="w-28 h-20 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'var(--surface)', border: '1px solid var(--line-soft)' }}>
+                      <SocialIcon platform={post.platform} className="w-8 h-8 opacity-20" />
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1.5">
-                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium ${style.badge || 'bg-slate-200 text-slate-700'}`}>
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium text-white" style={{ background: style.badge || 'var(--ink-faint)' }}>
                         <SocialIcon platform={post.platform} className="w-3 h-3" />
                         {post.platform}
                       </span>
-                      <span className="text-xs text-slate-400">{formatDate(post.published_at)}</span>
+                      <span className="text-xs" style={{ color: 'var(--ink-faint)', fontFamily: 'var(--font-mono)' }}>{formatDate(post.published_at)}</span>
                     </div>
-                    <p className="text-sm text-slate-700 line-clamp-2 leading-relaxed">{post.content}</p>
+                    <p className="text-sm line-clamp-2 leading-relaxed" style={{ color: 'var(--ink-dim)' }}>{post.content}</p>
                   </div>
                   <div className="flex flex-col gap-2 text-sm shrink-0 pt-1">
-                    <span className="flex items-center gap-1.5 text-slate-400" title="Likes">
-                      <HeartIcon className="w-4 h-4 text-pink-400" />
+                    <span className="flex items-center gap-1.5" style={{ color: 'var(--ink-faint)' }} title="Likes">
+                      <HeartIcon className="w-4 h-4" style={{ color: 'var(--c4)' }} />
                       {formatNumber(post.likes)}
                     </span>
-                    <span className="flex items-center gap-1.5 text-slate-400" title="Comments">
-                      <MessageSquareIcon className="w-4 h-4 text-blue-400" />
+                    <span className="flex items-center gap-1.5" style={{ color: 'var(--ink-faint)' }} title="Comments">
+                      <MessageSquareIcon className="w-4 h-4" style={{ color: 'var(--c1)' }} />
                       {formatNumber(post.comments)}
                     </span>
                   </div>
@@ -209,7 +221,7 @@ export default function Dashboard({ creatorId }) {
           })}
           {filteredPosts.length === 0 && (
             <div className="py-12 text-center">
-              <p className="text-slate-400 text-sm">No posts from this channel.</p>
+              <p className="text-sm" style={{ color: 'var(--ink-faint)' }}>No posts from this channel.</p>
             </div>
           )}
         </div>

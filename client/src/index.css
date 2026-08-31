@@ -2,11 +2,48 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  :root {
+    --bg: #ffffff;
+    --bg-raise: #f8fafc;
+    --surface: rgba(0, 0, 0, 0.03);
+    --surface-2: rgba(0, 0, 0, 0.05);
+    --line: rgba(0, 0, 0, 0.1);
+    --line-soft: rgba(0, 0, 0, 0.06);
+    --ink: #0b1220;
+    --ink-dim: #545d6e;
+    --ink-faint: #7d8597;
+    --accent: #3da9ff;
+    --accent-glow: rgba(61, 169, 255, 0.15);
+    --c1: #3da9ff;
+    --c2: #58e08c;
+    --c3: #ffd84d;
+    --c4: #ff6ad5;
+    --c5: #ff5c4f;
+  }
+
+  .dark {
+    --bg: #000004;
+    --bg-raise: #04060b;
+    --surface: rgba(255, 255, 255, 0.03);
+    --surface-2: rgba(255, 255, 255, 0.05);
+    --line: rgba(255, 255, 255, 0.1);
+    --line-soft: rgba(255, 255, 255, 0.06);
+    --ink: #f5f7fc;
+    --ink-dim: #aab1be;
+    --ink-faint: #7d8597;
+    --accent: #3da9ff;
+    --accent-glow: rgba(61, 169, 255, 0.25);
+  }
+}
+
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  font-family: 'Inter Variable', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background: var(--bg);
+  color: var(--ink);
 }
 
 /* Smooth scrolling */
@@ -33,11 +70,19 @@ html {
   background: #94a3b8;
 }
 
+.dark ::-webkit-scrollbar-thumb {
+  background: #475569;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
 /* Focus styles */
 *:focus-visible {
-  outline: 2px solid #6366f1;
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
-  border-radius: 8px;
+  border-radius: 4px;
 }
 
 /* Number input spinners hidden */
@@ -75,6 +120,11 @@ input[type="number"] {
   to { opacity: 1; transform: scale(1); }
 }
 
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 20px -8px var(--accent); }
+  50% { box-shadow: 0 0 30px -6px var(--accent); }
+}
+
 .animate-fade-in {
   animation: fade-in 0.3s ease-out;
 }
@@ -85,4 +135,92 @@ input[type="number"] {
 
 .animate-scale-in {
   animation: scale-in 0.2s ease-out;
+}
+
+.animate-glow {
+  animation: glow-pulse 2s ease-in-out infinite;
+}
+
+/* Kalpa Vision style card hover */
+.kv-card {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--line-soft);
+  border-radius: 12px;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.kv-card::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 2px;
+  width: 100%;
+  transform: scaleX(0);
+  transform-origin: left;
+  background: var(--accent);
+  box-shadow: 0 0 12px var(--accent);
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.kv-card:hover {
+  background: var(--surface-2);
+  border-color: var(--line);
+}
+
+.kv-card:hover::before {
+  transform: scaleX(1);
+}
+
+/* Glassmorphism */
+.glass {
+  background: color-mix(in oklab, var(--bg) 60%, transparent);
+  backdrop-filter: blur(14px) saturate(1.1);
+  -webkit-backdrop-filter: blur(14px) saturate(1.1);
+}
+
+/* Accent glow effect */
+.glow-accent {
+  box-shadow: 0 0 26px -8px var(--accent);
+}
+
+.glow-accent:hover {
+  box-shadow: 0 0 34px -6px var(--accent);
+}
+
+/* Grid layout with 1px gaps */
+.kv-grid {
+  display: grid;
+  gap: 1px;
+  background: var(--line-soft);
+  border: 1px solid var(--line-soft);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.kv-grid-item {
+  background: var(--bg);
+  padding: clamp(1.2rem, 2vw, 1.7rem);
+  display: grid;
+  gap: 0.55rem;
+  align-content: start;
+}
+
+/* Eyebrow label */
+.eyebrow {
+  font-family: 'JetBrains Mono', ui-monospace, 'SF Mono', monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+/* Status dot */
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--accent);
+  box-shadow: 0 0 9px var(--accent);
 }
