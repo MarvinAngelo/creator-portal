@@ -13,8 +13,13 @@ const PORT = process.env.PORT || 3002;
 app.use(cors());
 app.use(express.json());
 
-// Initialize DB
-getDb();
+// Initialize DB and auto-seed if empty
+const database = getDb();
+const creatorCount = database.prepare('SELECT COUNT(*) as count FROM creators').get().count;
+if (creatorCount === 0) {
+  console.log('Empty database detected — seeding...');
+  require('./seed')();
+}
 
 // API routes
 app.use('/api/creators', creatorsRouter);
