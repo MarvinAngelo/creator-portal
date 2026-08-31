@@ -2,12 +2,15 @@
 
 A full-stack portal for creators working with a talent agency. Three screens: Dashboard (profile, connected accounts, posts feed), Wallet (balance, pending earnings, transactions), and Payouts (request, approve/reject lifecycle).
 
+**Live:** [https://creator-portal-9hlt.onrender.com/dashboard](https://creator-portal-9hlt.onrender.com/dashboard)
+
 ## How It's Built
 
 - **Frontend:** React 18 + Vite + Tailwind CSS + React Router
 - **Backend:** Express.js API serving both the API and built React static files (single deployment)
 - **Database:** SQLite via better-sqlite3 (zero config, synchronous, real persistence)
 - **All monetary values:** Integer cents — never floating-point
+- **Dark mode:** Toggle between light and dark themes with localStorage persistence
 
 ## Which Slice I Made Real
 
@@ -19,6 +22,41 @@ The payout endpoint (`POST /api/payouts`) handles:
 - **Concurrent requests** — `BEGIN IMMEDIATE` acquires SQLite write lock at transaction start, serializing concurrent requests
 - **Terminal state guards** — approve/reject check status before transitioning, return 409 if already processed
 - **Balance consistency** — all three writes (payout record, balance update, transaction log) wrapped in a single DB transaction
+
+## Features
+
+### Dashboard
+- Creator profile with avatar, name, bio, and balance
+- Connected accounts with platform icons (Twitter, YouTube, Instagram, TikTok)
+- Follower counts and last synced time for each account
+- Disconnect/reconnect functionality with dynamic counter
+- Posts feed filtered by platform
+- Posts from disconnected channels are hidden
+- Filter pills show disconnected platforms as disabled
+
+### Wallet
+- Gradient balance cards with glowing effects
+- Available balance and pending earnings display
+- Payout request form with dollar sign prefix
+- Loading spinner during submission
+- Transaction history with type icons (credit, debit, refund)
+- Expandable rejection reason on rejected payouts
+
+### Payouts
+- Payout request list with status badges
+- Pending, approved, and rejected states with color coding
+- Approve/reject actions with confirmation
+- Expandable rejection reason button
+- Error banner with dismiss functionality
+
+### UI/UX
+- Kalpa Vision aesthetic — dark theme by default
+- Glassmorphism navigation with backdrop blur
+- Accent glow effects on cards and buttons
+- Monospace labels for metadata
+- Smooth animations and transitions
+- Custom scrollbar styling
+- Responsive design for all screen sizes
 
 ## Assumptions
 
@@ -57,3 +95,37 @@ fetch(url, {
   headers: { 'Content-Type': 'application/json', ...customHeaders },
 });
 ```
+
+## Project Structure
+
+```
+creator-portal/
+├── server/
+│   ├── index.js          # Express entry, API routes
+│   ├── db.js             # SQLite setup, schema
+│   ├── seed.js           # Idempotent seed function
+│   └── routes/
+│       ├── creators.js   # Creator + posts endpoints
+│       ├── wallet.js     # Balance, pending, transactions
+│       └── payouts.js    # Payout CRUD + approve/reject
+├── client/
+│   ├── src/
+│   │   ├── App.jsx       # Nav, routing, dark mode
+│   │   ├── api.js        # Fetch wrapper
+│   │   ├── context/
+│   │   │   └── DarkModeContext.jsx
+│   │   ├── components/
+│   │   │   ├── Icons.jsx      # SVG UI icons
+│   │   │   └── SocialIcon.jsx # Platform logos
+│   │   └── pages/
+│   │       ├── Dashboard.jsx
+│   │       ├── Wallet.jsx
+│   │       └── Payouts.jsx
+│   ├── index.html
+│   └── vite.config.js
+└── render.yaml           # Deployment config
+```
+
+---
+
+*Built for Kalpa Vision Technical Assessment — August 2026*
